@@ -1,0 +1,27 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/test_pad.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/car/car.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/camera/chase_camera.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/ui/debug_hud.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/effects/skid_marks.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/effects/tyre_smoke.gd" id="6"]
+
+[node name="TestPad" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Car" type="Node3D" parent="."]
+script = ExtResource("2")
+
+[node name="SkidMarks" type="MultiMeshInstance3D" parent="."]
+script = ExtResource("5")
+
+[node name="TyreSmoke" type="MultiMeshInstance3D" parent="."]
+script = ExtResource("6")
+
+[node name="ChaseCamera" type="Camera3D" parent="."]
+current = true
+script = ExtResource("3")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("4")
