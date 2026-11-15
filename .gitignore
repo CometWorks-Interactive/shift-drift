@@ -1,0 +1,12 @@
+# Godot
+.godot/
+*.translation
+export_presets.cfg
+build/
+
+# Purchased asset pack: licensed for use inside the built game only.
+# Never commit the source model files to the public repo.
+assets/vendor/
+
+# macOS
+.DS_Store
