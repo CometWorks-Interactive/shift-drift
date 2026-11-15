@@ -1,9 +1,11 @@
 extends SceneTree
 ## One-table summary of how the car handles, for tuning by numbers.
 ## Run with:  godot --headless --path . --script res://tools/handling_report.gd
-## Optional overrides:  -- slip_damp=3000 lat_damping=0.3
+## Optional, after "--":  car=muscle  to test a car from the roster, and
+## setting=value pairs to override individual settings, e.g.  slip_damp=3000
 
 const CarSim := preload("res://scripts/car/car_sim.gd")
+const CarRoster := preload("res://scripts/car/car_roster.gd")
 const DT := 1.0 / 60.0
 
 var _overrides := {}
@@ -12,7 +14,13 @@ var _overrides := {}
 func _init() -> void:
 	for arg in OS.get_cmdline_user_args():
 		var parts := arg.split("=")
-		if parts.size() == 2:
+		if parts.size() != 2:
+			continue
+		if parts[0] == "car":
+			var entry := CarRoster.find(parts[1])
+			print("car: ", entry["name"])
+			_overrides.merge(entry["setup"], true)
+		else:
 			_overrides[parts[0]] = parts[1].to_float()
 	if not _overrides.is_empty():
 		print("overrides: ", _overrides)

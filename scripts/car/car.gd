@@ -8,19 +8,26 @@ extends Node3D
 
 const CarSim := preload("res://scripts/car/car_sim.gd")
 const CarLibrary := preload("res://scripts/car/car_library.gd")
+const CarRoster := preload("res://scripts/car/car_roster.gd")
 
 ## Emitted when the car is put back at the start, so effects can clear themselves.
 signal was_reset
 ## Emitted after the visible model changes.
 signal model_changed
+## Emitted after switching to a different car (handling and model).
+signal car_changed
 
 const MAX_ROLL := deg_to_rad(7.0)
 const MAX_PITCH := deg_to_rad(2.5)
 const MODEL_SCALE := 0.8          ## the pack's cars are about 25% larger than life
 const WHEELSPIN_SPEED := 30.0     ## m/s the rear tyres spin up to in a full slide on power
 
-## Which pack model to show, for example "sports_01". Ignored if the pack is missing.
-@export var model_id := "sports_01"
+## Which car from car_roster.gd to drive.
+@export var car_id := CarRoster.DEFAULT
+
+## Which pack model is showing, for example "sports_01". Set by the car, and can
+## be changed on its own for looks. Ignored if the pack is missing.
+var model_id := ""
 
 var sim := CarSim.new()
 
@@ -55,8 +62,18 @@ var _pitch := 0.0
 
 
 func _ready() -> void:
+	set_car(car_id)
+
+
+## Switch to another car from the roster: its handling and its model.
+func set_car(id: String) -> void:
+	var entry := CarRoster.find(id)
+	car_id = entry["id"]
+	sim = CarRoster.make_sim(car_id)
+	model_id = entry["model"]
 	_build_visual()
 	reset_car()
+	car_changed.emit()
 
 
 func reset_car() -> void:

@@ -5,8 +5,8 @@ extends MultiMeshInstance3D
 
 @export var car_path: NodePath = ^"../Car"
 
-const POOL := 256
-const RATE := 45.0            ## puffs per second per tyre in a full slide
+const POOL := 384
+const RATE := 45.0            ## puffs per second per tyre in a full slide at about 30 km/h; more when faster
 const LIFE := 1.5             ## s
 const START_SIZE := 0.9       ## m
 const END_SIZE := 4.2         ## m
@@ -99,7 +99,8 @@ func _physics_process(delta: float) -> void:
 	var colour := PLAIN.lerp(KICKED, clampf(_car.sim.kick * 1.3, 0.0, 1.0))
 	var car_velocity: Vector3 = _car.world_velocity()
 	for tyre in 2:
-		_owed[tyre] += RATE * slide * delta
+		# Faster cars cover more ground per second, so they need more puffs to leave an unbroken trail.
+		_owed[tyre] += RATE * slide * (0.6 + _car.sim.speed / 22.0) * delta
 		while _owed[tyre] >= 1.0:
 			_owed[tyre] -= 1.0
 			_spawn(_car.rear_contact(-1.0 if tyre == 0 else 1.0), car_velocity, slide, colour)

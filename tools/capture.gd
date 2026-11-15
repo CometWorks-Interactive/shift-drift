@@ -1,6 +1,6 @@
 extends Node
 ## Drives the car through a scripted flick and saves screenshots, then quits.
-## Run with:  godot --path . -- --capture --out=/some/folder
+## Run with:  godot --path . -- --capture --out=/some/folder [--car=muscle]
 
 ## [duration_s, throttle, lean, handbrake]
 const PHASES := [
@@ -24,6 +24,9 @@ func _ready() -> void:
 		if arg.begins_with("--out="):
 			_out = arg.trim_prefix("--out=")
 	_car = get_node("../Car")
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--car="):
+			_car.set_car(arg.trim_prefix("--car="))
 	_car.override_inputs = true
 
 

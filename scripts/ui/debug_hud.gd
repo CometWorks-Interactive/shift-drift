@@ -3,6 +3,7 @@ extends CanvasLayer
 ## Tab selects a setting, - and = change it, Backspace restores it.
 
 const CarLibrary := preload("res://scripts/car/car_library.gd")
+const CarRoster := preload("res://scripts/car/car_roster.gd")
 
 @export var car_path: NodePath = ^"../Car"
 
@@ -35,20 +36,20 @@ var _peak_slip := 0.0
 
 func _ready() -> void:
 	_car = get_node(car_path)
-	for t in TUNABLES:
-		_defaults[t[0]] = _car.sim.get(t[0])
+	_car.car_changed.connect(_on_car_changed)
+	_on_car_changed()
 
 	_readout = _label(Vector2(16, 12), 20)
-	_tuning = _label(Vector2(16, 280), 14)
+	_tuning = _label(Vector2(16, 330), 14)
 	var mono := SystemFont.new()
 	mono.font_names = PackedStringArray(["Menlo", "Consolas", "DejaVu Sans Mono", "monospace"])
 	_tuning.add_theme_font_override("font", mono)
 	_help = _label(Vector2(16, 0), 15)
 	_help.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_help.offset_left = 16
-	_help.offset_top = -84
+	_help.offset_top = -108
 	_help.offset_bottom = -12
-	_help.text = "Space  throttle      Left / Right Shift  throw weight   (A / D and arrows also work)\nS  handbrake (test only)      R  reset\nTab  next setting      -  =  change      Backspace  restore      ,  .  change car model"
+	_help.text = "Space  throttle      Left / Right Shift  throw weight   (A / D and arrows also work)\nS  handbrake (test only)      R  reset\n1 2 3 4  change car      ,  .  change its look\nTab  next setting      -  =  change      Backspace  restore"
 
 	_gauge = Control.new()
 	_gauge.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
@@ -88,10 +89,22 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_car.sim.set(t[0], _defaults[t[0]])
 		KEY_R:
 			_peak_slip = 0.0
+		KEY_1, KEY_2, KEY_3, KEY_4:
+			var cars := CarRoster.ids()
+			var pick := code - KEY_1
+			if not key.echo and pick < cars.size():
+				_car.set_car(cars[pick])
 		KEY_PERIOD:
 			_cycle_model(1)
 		KEY_COMMA:
 			_cycle_model(-1)
+
+
+## A new car has its own settings, so "restore" must mean that car's values.
+func _on_car_changed() -> void:
+	for t in TUNABLES:
+		_defaults[t[0]] = _car.sim.get(t[0])
+	_peak_slip = 0.0
 
 
 ## Step through the pack's car models. Looks only: handling does not change.
@@ -122,8 +135,11 @@ func _process(_delta: float) -> void:
 	_readout.text = "%3d km/h\nangle %4.1f°   peak %4.1f°\nyaw %+5.0f °/s\n%s" % [
 		int(round(sim.speed * 3.6)), slip, _peak_slip, rad_to_deg(sim.yaw_rate), state,
 	]
-	if CarLibrary.available():
-		_readout.text += "\n" + _car.model_id
+	var entry := CarRoster.find(_car.car_id)
+	_readout.text += "\n\n%s" % entry["name"]
+	if CarLibrary.available() and _car.model_id != entry["model"]:
+		_readout.text += "  (looks: %s)" % _car.model_id
+	_readout.text += "\n" + entry["blurb"]
 
 	var lines := PackedStringArray()
 	for i in TUNABLES.size():

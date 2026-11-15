@@ -13,7 +13,7 @@ There is no steering wheel. Space is the throttle, and the two Shift keys throw 
 | A / D or arrow keys | Same as the Shift keys |
 | R | Reset the car |
 
-Test-pad only: `S` is a handbrake, `Tab` selects a handling setting, `-` and `=` change it, `Backspace` restores it, and `,` / `.` change the car model.
+Test-pad only: `1`–`4` switch car, `,` / `.` change the car's look, `S` is a handbrake, `Tab` selects a handling setting, `-` and `=` change it, and `Backspace` restores it.
 
 ## How to drift
 
@@ -21,6 +21,17 @@ Test-pad only: `S` is a handbrake, `Tab` selects a handling setting, `-` and `=`
 - **Hold Shift on the throttle** to hold a slide. Tap Shift to make it shallower.
 - **Lift off the throttle** to end the slide.
 - **Flick:** tap the opposite Shift for about 0.4 seconds, then swap. If the weight swings past the amber marks on the gauge you get a kick and a bigger slide.
+
+## Cars
+
+| Car | Character |
+|---|---|
+| Hatchback | Light and forgiving. Almost any flick earns a kick, but the kick is small. |
+| Sedan | The benchmark. Flick for about 0.4 s to earn the kick. |
+| Muscle | Heavy and fast. Slow to swing, needs room, and its kick lasts longest. |
+| Sports | Fastest and grippiest. A shallow slide unless you hit a tight flick window. |
+
+Each car is the baseline handling plus a few changed settings, listed in `scripts/car/car_roster.gd`.
 
 ## Running it
 
@@ -32,7 +43,7 @@ godot --path .
 
 ## Status
 
-Early work in progress. So far there is a handling test pad, tyre smoke and skid marks. Courses, scoring and sound are not built yet.
+Early work in progress. So far there is a handling test pad, four cars, tyre smoke and skid marks. Courses, scoring and sound are not built yet.
 
 ## Layout
 
@@ -55,7 +66,7 @@ godot --headless --path . --script res://tools/sim_scenarios.gd
 godot --headless --path . --script res://tools/handling_report.gd
 ```
 
-`handling_report.gd` accepts overrides after `--`, for example `-- kick_gain=0.6 lat_freq=1.1`.
+`handling_report.gd` takes options after `--`: `car=muscle` tests a car from the roster, and `setting=value` pairs override individual settings, for example `-- car=sports kick_gain=0.6`.
 
 ## Assets
 
