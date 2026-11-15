@@ -20,7 +20,7 @@ signal car_changed
 const MAX_ROLL := deg_to_rad(7.0)
 const MAX_PITCH := deg_to_rad(2.5)
 const MODEL_SCALE := 0.8          ## the pack's cars are about 25% larger than life
-const WHEELSPIN_SPEED := 30.0     ## m/s the rear tyres spin up to in a full slide on power
+const WHEELSPIN_SPEED := 40.0     ## m/s, the fastest the rear wheels are drawn turning
 
 ## Which car from car_roster.gd to drive.
 @export var car_id := CarRoster.DEFAULT
@@ -182,8 +182,9 @@ func _update_body_motion(delta: float) -> void:
 
 
 func _spin_wheels(delta: float) -> void:
-	# Rear tyres spin faster than the road in a slide on power.
-	var rear_speed := maxf(sim.vx, lerpf(sim.vx, WHEELSPIN_SPEED, sim.pw * sim.slide))
+	# The rear wheels turn at their own speed: faster than the road under
+	# wheelspin, stopped on the handbrake.
+	var rear_speed := clampf(sim.ws, -WHEELSPIN_SPEED, WHEELSPIN_SPEED)
 	for i in _spin_pivots.size():
 		var surface_speed := rear_speed if _spin_is_rear[i] else sim.vx
 		_spin_pivots[i].rotation.x = wrapf(_spin_pivots[i].rotation.x + surface_speed * delta / _spin_radius[i], -PI, PI)

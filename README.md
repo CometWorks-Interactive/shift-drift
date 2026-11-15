@@ -2,7 +2,7 @@
 
 A three-key drift game for [GitHub Game Off 2026](https://itch.io/jam/game-off-2026). The theme is **SHIFT**.
 
-There is no steering wheel. Space is the throttle, and the two Shift keys throw the car's weight left or right. The weight swings like a pendulum, so the skill is timing your presses to the swing.
+There is no steering wheel. Space is the throttle, and the two Shift keys throw the car's weight left or right. Weight moves the way it does in a real car, so the skill is timing your presses and your throttle to where the weight is.
 
 ## Controls
 
@@ -17,19 +17,25 @@ Test-pad only: `1`–`4` switch car, `,` / `.` change the car's look, `S` is a h
 
 ## How to drift
 
+The car is rear-wheel drive and it punishes clumsy inputs. The rear wheels have their own spin speed: the harder they spin, the less sideways grip the tail has.
+
 - **Press early.** The car turns a beat after the key.
-- **Hold Shift on the throttle** to hold a slide. Tap Shift to make it shallower.
-- **Lift off the throttle** to end the slide.
-- **Flick:** tap the opposite Shift for about 0.4 seconds, then swap. If the weight swings past the amber marks on the gauge you get a kick and a bigger slide.
+- **Hold Shift on the throttle** to hold a slide. At speed that is a steady drift of about 40 degrees.
+- **Slow in, tight out.** The same hold makes a tighter arc the slower you enter. There are no brakes, so lift early to lose speed.
+- **Donut:** hold Shift and the throttle from a standstill. At low speed the engine spins the wheels freely and the tail swings right round.
+- **Lift off the throttle** and the wheels stop spinning, the weight pitches forward, and the car snaps straight and a little past it.
+- **Pause between Shifts** in an S-bend. Swap sides with less than half a second's pause and the car rotates faster than the front wheels can catch it: it spins.
+- **Flick:** tap the opposite Shift first, then swap. A longer tap throws the car into a bigger slide; too long and it spins.
+- **Do not overcorrect.** A long stab of opposite Shift to catch a slide sends the car round the other way.
 
 ## Cars
 
 | Car | Character |
 |---|---|
-| Hatchback | Light and forgiving. Almost any flick earns a kick, but the kick is small. |
-| Sedan | The benchmark. Flick for about 0.4 s to earn the kick. |
-| Muscle | Heavy and fast. Slow to swing, needs room, and its kick lasts longest. |
-| Sports | Fastest and grippiest. A shallow slide unless you hit a tight flick window. |
+| Hatchback | Light and forgiving. Easy slides that are hard to spin. |
+| Sedan | The benchmark. Holds a 40 degree slide, and spins if you swap sides without a pause. |
+| Muscle | Heavy, with a lot of torque. Slow to swing and slow to forgive. |
+| Sports | Fastest and grippiest. Bites hard and spins on small mistakes. |
 
 Each car is the baseline handling plus a few changed settings, listed in `scripts/car/car_roster.gd`.
 
@@ -66,7 +72,7 @@ godot --headless --path . --script res://tools/sim_scenarios.gd
 godot --headless --path . --script res://tools/handling_report.gd
 ```
 
-`handling_report.gd` takes options after `--`: `car=muscle` tests a car from the roster, and `setting=value` pairs override individual settings, for example `-- car=sports kick_gain=0.6`.
+`handling_report.gd` takes options after `--`: `car=muscle` tests a car from the roster, and `setting=value` pairs override individual settings, for example `-- car=sports steer_rate=2.6`.
 
 ## Assets
 

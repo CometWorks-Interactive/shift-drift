@@ -9,19 +9,19 @@ const CarRoster := preload("res://scripts/car/car_roster.gd")
 
 ## [property on the sim, step, label]
 const TUNABLES := [
-	["d_frac", 0.02, "lean steer (held drift angle)"],
-	["power_grip", 0.02, "rear grip on power"],
-	["k_caster", 0.05, "front self-steer (forgiveness)"],
-	["slip_damp", 250.0, "slide steadiness"],
+	["d_frac", 0.05, "lean steer (Shift strength)"],
+	["engine_force", 500.0, "engine push at low speed, N"],
+	["engine_power", 10000.0, "engine power, W (top speed)"],
+	["mu_front", 0.05, "front tyre grip"],
+	["mu_rear", 0.05, "rear tyre grip"],
+	["slide_grip", 0.05, "rear grip kept while sliding or spinning"],
+	["low_speed_steer", 0.05, "steering lock at low speed, rad (donuts)"],
+	["cg_height", 0.05, "CG height, m (weight transfer)"],
+	["steer_rate", 0.25, "counter-steer speed, rad/s"],
+	["steer_lead", 0.01, "counter-steer anticipation, s"],
 	["lat_freq", 0.1, "weight speed, Hz (car's tempo)"],
 	["lat_damping", 0.05, "weight bounce (lower = more swing)"],
-	["w_break", 0.05, "swing needed for a kick"],
-	["kick_gain", 0.05, "kick strength"],
-	["kick_time", 0.25, "kick duration, s"],
-	["mu_front", 0.05, "front grip"],
-	["mu_rear", 0.05, "rear grip"],
-	["steer_lock", 0.05, "steering lock, rad (angle ceiling)"],
-	["engine_force", 500.0, "engine force"],
+	["assist", 0.1, "assists (0 = off, 1 = full)"],
 ]
 
 var _car: Node3D
@@ -129,11 +129,13 @@ func _process(_delta: float) -> void:
 		state = "SPIN GUARD"
 	elif sim.slide > 0.0:
 		state = "DRIFT"
-	# A kick is the reward for a well-timed weight throw.
-	if sim.kick > 0.05:
+	# A kick is the reward for a well-timed weight throw (off unless kick_gain is set).
+	if sim.kick_gain > 0.0 and sim.kick > 0.05:
 		state += "   KICK %d%%" % int(round(sim.kick * 100.0))
-	_readout.text = "%3d km/h\nangle %4.1f°   peak %4.1f°\nyaw %+5.0f °/s\n%s" % [
-		int(round(sim.speed * 3.6)), slip, _peak_slip, rad_to_deg(sim.yaw_rate), state,
+	if slip > 100.0:
+		state = "SPIN"
+	_readout.text = "%3d km/h\nangle %4.1f°   peak %4.1f°\nweight on rear %+3d%%   rear grip left %3d%%\n%s" % [
+		int(round(sim.speed * 3.6)), slip, _peak_slip, int(round(sim.wx * 100.0)), int(round(sim.rear_grip_share * 100.0)), state,
 	]
 	var entry := CarRoster.find(_car.car_id)
 	_readout.text += "\n\n%s" % entry["name"]
@@ -162,13 +164,14 @@ func _draw_gauge() -> void:
 	_gauge.draw_line(Vector2(8, centre.y), Vector2(size.x - 8, centre.y), Color(1, 1, 1, 0.2), 1.0)
 	var unit := reach / 2.0
 	_gauge.draw_arc(centre, unit, 0.0, TAU, 48, Color(1, 1, 1, 0.2), 1.0)
-	# Swing the weight past these marks to earn a kick.
-	for side in [-1.0, 1.0]:
+	# Swing the weight past these marks to earn a kick (only when the kick is switched on).
+	for side in ([-1.0, 1.0] if sim.kick_gain > 0.0 else []):
 		var x: float = centre.x + side * sim.w_break * unit
 		_gauge.draw_line(Vector2(x, centre.y - 22), Vector2(x, centre.y + 22), Color(1.0, 0.75, 0.2, 0.8), 2.0)
 	# Screen left is the car's left, screen up is the car's front. A weight of 1.0 sits on the ring.
-	var dot := centre + Vector2(-sim.wy, sim.wx * 0.5) * unit
-	var colour := Color(1.0, 0.75, 0.2) if absf(sim.wy) > sim.w_break else Color(0.4, 0.85, 1.0)
+	# Up/down is the share of weight moved by acceleration: about 20% is a lot.
+	var dot := centre + Vector2(-sim.wy, clampf(sim.wx / 0.2, -1.5, 1.5) * 0.5) * unit
+	var colour := Color(1.0, 0.75, 0.2) if sim.kick_gain > 0.0 and absf(sim.wy) > sim.w_break else Color(0.4, 0.85, 1.0)
 	_gauge.draw_circle(dot, 9.0, colour)
 	# Key state along the bottom.
 	var on := Color(1, 1, 1, 0.95)

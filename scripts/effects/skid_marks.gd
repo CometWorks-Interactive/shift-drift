@@ -54,7 +54,8 @@ func clear() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	var slide: float = _car.sim.slide
+	# Marks come from sliding sideways and from spinning the wheels.
+	var slide: float = maxf(_car.sim.slide, _car.sim.wheelspin)
 	for tyre in 2:
 		var point: Vector3 = _car.rear_contact(-1.0 if tyre == 0 else 1.0)
 		if slide <= 0.0:

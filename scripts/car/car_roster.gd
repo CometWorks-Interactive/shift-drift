@@ -2,12 +2,13 @@ extends RefCounted
 ## The playable cars. Each one is the baseline handling in car_sim.gd plus a
 ## handful of changed settings, and a model from the car pack.
 ##
-## Cars differ in tempo (how fast the weight swings), how strict the kick
-## window is, how big the kick is, speed and grip. The weight bounce, the
-## self-steer and the assists are the same on every car so skills carry over.
+## Cars differ in tempo (how fast the weight swings), power, grip, and how
+## quickly the front wheels catch a slide. The physics rules are the same on
+## every car so skills carry over.
 ##
 ## These numbers come from scripted runs (tools/handling_report.gd), not from
-## hands-on driving, so treat them as starting points.
+## hands-on driving, so treat them as starting points. The Sedan is the tuned
+## one; the other three are a first pass on the same physics.
 
 const CarSim := preload("res://scripts/car/car_sim.gd")
 
@@ -15,39 +16,38 @@ const CARS: Array[Dictionary] = [
 	{
 		"id": "hatchback",
 		"name": "Hatchback",
-		"blurb": "Light and forgiving. Almost any flick earns a kick, but the kick is small.",
+		"blurb": "Light and forgiving. Easy slides that are hard to spin.",
 		"model": "hatchback_01",
 		"setup": {
-			"lat_freq": 1.55, "inertia": 1150.0, "engine_force": 6300.0,
-			"w_break": 1.5, "k_feint": 5.0, "kick_gain": 0.3, "slip_damp": 3000.0,
+			"lat_freq": 1.55, "inertia": 1150.0, "engine_power": 169000.0, "engine_force": 11500.0,
+			"steer_rate": 3.0, "steer_lead": 0.07,
 		},
 	},
 	{
 		"id": "sedan",
 		"name": "Sedan",
-		"blurb": "The benchmark. Flick for about 0.4 s to earn the kick.",
+		"blurb": "The benchmark. Holds a 40 degree slide, and spins if you swap sides without a pause.",
 		"model": "sedan_07",
 		"setup": {},
 	},
 	{
 		"id": "muscle",
 		"name": "Muscle",
-		"blurb": "Heavy and fast. Slow to swing, needs room, and its kick lasts longest.",
+		"blurb": "Heavy, with a lot of torque. Slow to swing and slow to forgive.",
 		"model": "muscle_01",
 		"setup": {
-			"lat_freq": 1.0, "inertia": 1900.0, "engine_force": 9000.0, "power_grip": 0.35,
-			"d_frac": 0.45, "kick_gain": 0.6, "kick_time": 3.0, "slip_damp": 3400.0,
+			"lat_freq": 1.0, "inertia": 1900.0, "engine_power": 250000.0, "engine_force": 13500.0,
+			"d_frac": 0.88, "steer_lead": 0.07,
 		},
 	},
 	{
 		"id": "sports",
 		"name": "Sports",
-		"blurb": "Fastest and grippiest. A shallow slide unless you hit a tight flick window.",
+		"blurb": "Fastest and grippiest. Bites hard and spins on small mistakes.",
 		"model": "sports_14",
 		"setup": {
-			"lat_freq": 1.8, "inertia": 1200.0, "engine_force": 10500.0,
-			"mu_front": 2.55, "mu_rear": 2.92, "w_break": 1.75, "k_feint": 10.0,
-			"d_frac": 0.42, "kick_gain": 0.8, "slip_damp": 3000.0,
+			"lat_freq": 1.8, "inertia": 1200.0, "engine_power": 370000.0, "engine_force": 19000.0,
+			"mu_front": 2.0, "mu_rear": 1.95,
 		},
 	},
 ]

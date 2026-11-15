@@ -92,11 +92,13 @@ func clear() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var slide: float = _car.sim.slide
+	# Smoke comes from sliding sideways and from spinning the wheels (a donut or a burnout).
+	var slide: float = maxf(_car.sim.slide, _car.sim.wheelspin)
 	if slide <= 0.0:
 		_owed = [0.0, 0.0]
 		return
-	var colour := PLAIN.lerp(KICKED, clampf(_car.sim.kick * 1.3, 0.0, 1.0))
+	var kick: float = _car.sim.kick if _car.sim.kick_gain > 0.0 else 0.0
+	var colour := PLAIN.lerp(KICKED, clampf(kick * 1.3, 0.0, 1.0))
 	var car_velocity: Vector3 = _car.world_velocity()
 	for tyre in 2:
 		# Faster cars cover more ground per second, so they need more puffs to leave an unbroken trail.
@@ -111,7 +113,7 @@ func _spawn(at: Vector3, car_velocity: Vector3, slide: float, colour: Color) -> 
 	_next = (_next + 1) % POOL
 	_alive[i] = 1
 	_age[i] = 0.0
-	_strength[i] = lerpf(0.35, 0.85, slide)
+	_strength[i] = lerpf(0.28, 0.6, slide)
 	_colour[i] = colour
 	_pos[i] = at + Vector3(_rng.randf_range(-0.2, 0.2), 0.25, _rng.randf_range(-0.2, 0.2))
 	# Smoke is dragged along a little by the car, then hangs and rises.
