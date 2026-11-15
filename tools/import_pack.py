@@ -143,7 +143,9 @@ def main():
 
     if os.path.isdir(OUT):
         shutil.rmtree(OUT)
-    used_materials = {part[1] for model in models for part in model["parts"] if part[1]} | {"LP_Cars", "LP_Glass_01"}
+    # Keep every material, not only the ones the prefabs use: cars with tuning
+    # kits ship a second paint material that no prefab refers to.
+    used_materials = set(materials)
     copied = {}
 
     def copy(source, subfolder):

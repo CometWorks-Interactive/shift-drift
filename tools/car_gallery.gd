@@ -2,7 +2,8 @@ extends SceneTree
 ## Renders a labelled contact sheet of every imported model, one image per category,
 ## so cars can be picked by eye. Needs a window (not --headless):
 ##   godot --path . --script res://tools/car_gallery.gd -- --out=/some/folder
-## Add --only=sports to render a single category.
+## Add --only=sports to render a single category, and --variant=tuned to show
+## cars that have tuning kits with the kit fitted.
 
 const CarLibrary := preload("res://scripts/car/car_library.gd")
 const COLUMNS := 10
@@ -10,6 +11,7 @@ const SPACING := Vector2(4.0, 6.8)
 
 var _out := "user://"
 var _only := ""
+var _variant := "stock"
 
 
 func _initialize() -> void:
@@ -18,6 +20,8 @@ func _initialize() -> void:
 			_out = arg.trim_prefix("--out=")
 		elif arg.begins_with("--only="):
 			_only = arg.trim_prefix("--only=")
+		elif arg.begins_with("--variant="):
+			_variant = arg.trim_prefix("--variant=")
 	if not CarLibrary.available():
 		print("The car pack is not imported. Run tools/import_pack.py first.")
 		quit()
@@ -37,7 +41,7 @@ func _run() -> void:
 		for i in 4:
 			await process_frame
 		await RenderingServer.frame_post_draw
-		var path := _out.path_join("gallery_%s.png" % category)
+		var path := _out.path_join("gallery_%s%s.png" % [category, "" if _variant == "stock" else "_" + _variant])
 		root.get_texture().get_image().save_png(path)
 		print("saved ", path, "  (", ids.size(), " models)")
 		stage.queue_free()
@@ -79,7 +83,7 @@ func _build(ids: PackedStringArray, category: String) -> Node3D:
 	var columns := mini(COLUMNS, ids.size())
 	var rows := ceili(float(ids.size()) / columns)
 	for i in ids.size():
-		var model := CarLibrary.instantiate(ids[i])
+		var model := CarLibrary.instantiate(ids[i], _variant)
 		if model == null:
 			continue
 		var col := i % columns
