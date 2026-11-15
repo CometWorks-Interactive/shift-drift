@@ -13,7 +13,7 @@ There is no steering wheel. Space is the throttle, and the two Shift keys throw 
 | A / D or arrow keys | Same as the Shift keys |
 | R | Reset the car |
 
-Test-pad only: `S` is a handbrake, `Tab` selects a handling setting, `-` and `=` change it, `Backspace` restores it.
+Test-pad only: `S` is a handbrake, `Tab` selects a handling setting, `-` and `=` change it, `Backspace` restores it, and `,` / `.` change the car model.
 
 ## How to drift
 
@@ -32,7 +32,7 @@ godot --path .
 
 ## Status
 
-Early work in progress. So far there is a handling test pad with a placeholder car, tyre smoke and skid marks. Courses, scoring and sound are not built yet.
+Early work in progress. So far there is a handling test pad, tyre smoke and skid marks. Courses, scoring and sound are not built yet.
 
 ## Layout
 
@@ -43,7 +43,7 @@ scripts/camera/    Chase camera
 scripts/effects/   Skid marks and tyre smoke
 scripts/ui/        On-screen readouts and live tuning
 scripts/world/     Test pad
-tools/             Headless handling checks
+tools/             Headless handling checks, asset import, model gallery
 ```
 
 ## Handling checks
@@ -59,4 +59,19 @@ godot --headless --path . --script res://tools/handling_report.gd
 
 ## Assets
 
-The final game will use purchased 3D models. Their licence does not allow redistribution, so the model files are not in this repository.
+The game uses the purchased "Low Poly Racing Pack (Street Race)" models. Their licence does not allow redistribution, so the model files are not in this repository and `assets/vendor/` is ignored by git. Without them the game still runs, with a car made of boxes.
+
+If you own the pack, copy it in from a Unity project and let Godot import it:
+
+```bash
+python3 tools/import_pack.py "/path/to/Assets/Low Poly Racing Pack"
+godot --headless --path . --import
+```
+
+The models carry no materials of their own (Unity assigns them in prefabs), so the script also writes a manifest of which material each part uses. `scripts/car/car_library.gd` reads it. On the test pad, `,` and `.` step through the car models.
+
+To render a labelled contact sheet of every model:
+
+```bash
+godot --path . --script res://tools/car_gallery.gd -- --out=/some/folder
+```

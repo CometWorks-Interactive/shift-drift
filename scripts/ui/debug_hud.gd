@@ -2,6 +2,8 @@ extends CanvasLayer
 ## Test-pad readouts and a live tuning list.
 ## Tab selects a setting, - and = change it, Backspace restores it.
 
+const CarLibrary := preload("res://scripts/car/car_library.gd")
+
 @export var car_path: NodePath = ^"../Car"
 
 ## [property on the sim, step, label]
@@ -37,7 +39,7 @@ func _ready() -> void:
 		_defaults[t[0]] = _car.sim.get(t[0])
 
 	_readout = _label(Vector2(16, 12), 20)
-	_tuning = _label(Vector2(16, 250), 14)
+	_tuning = _label(Vector2(16, 280), 14)
 	var mono := SystemFont.new()
 	mono.font_names = PackedStringArray(["Menlo", "Consolas", "DejaVu Sans Mono", "monospace"])
 	_tuning.add_theme_font_override("font", mono)
@@ -46,7 +48,7 @@ func _ready() -> void:
 	_help.offset_left = 16
 	_help.offset_top = -84
 	_help.offset_bottom = -12
-	_help.text = "Space  throttle      Left / Right Shift  throw weight   (A / D and arrows also work)\nS  handbrake (test only)      R  reset\nTab  next setting      -  =  change      Backspace  restore"
+	_help.text = "Space  throttle      Left / Right Shift  throw weight   (A / D and arrows also work)\nS  handbrake (test only)      R  reset\nTab  next setting      -  =  change      Backspace  restore      ,  .  change car model"
 
 	_gauge = Control.new()
 	_gauge.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
@@ -86,6 +88,23 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_car.sim.set(t[0], _defaults[t[0]])
 		KEY_R:
 			_peak_slip = 0.0
+		KEY_PERIOD:
+			_cycle_model(1)
+		KEY_COMMA:
+			_cycle_model(-1)
+
+
+## Step through the pack's car models. Looks only: handling does not change.
+func _cycle_model(step: int) -> void:
+	if not CarLibrary.available():
+		return
+	var ids := PackedStringArray()
+	for category in CarLibrary.CAR_CATEGORIES:
+		ids.append_array(CarLibrary.ids(category))
+	if ids.is_empty():
+		return
+	var at := ids.find(_car.model_id)
+	_car.set_model(ids[posmod(at + step, ids.size())])
 
 
 func _process(_delta: float) -> void:
@@ -103,6 +122,8 @@ func _process(_delta: float) -> void:
 	_readout.text = "%3d km/h\nangle %4.1f°   peak %4.1f°\nyaw %+5.0f °/s\n%s" % [
 		int(round(sim.speed * 3.6)), slip, _peak_slip, rad_to_deg(sim.yaw_rate), state,
 	]
+	if CarLibrary.available():
+		_readout.text += "\n" + _car.model_id
 
 	var lines := PackedStringArray()
 	for i in TUNABLES.size():
